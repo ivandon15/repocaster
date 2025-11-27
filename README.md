@@ -16,6 +16,12 @@ Repocaster employs a multi-stage agentic pipeline powered by **LangGraph**:
     *   **Tool Critic & Reviser**: Iteratively improves tool coverage and argument completeness while avoiding redundancy.
 4.  **MCP Server Generation**: The agent generates a fully functional `server.py` using the `fastmcp` library, exposing the repository's capabilities as structured tools.
 
+### 📊 LangGraph Visualization
+
+LangGraph orchestrates the agent process. Below is the visualization of the agentic workflow:
+
+![LangGraph Visualization](./langgraph_visualization.png)
+
 ## 🚀 Installation
 
 ```bash
