@@ -1,0 +1,5 @@
+langchain==1.0.8
+langchain_openai==1.0.3
+langchain_core==1.0.7
+langgraph==1.0.3
+mcp==1.22.0
