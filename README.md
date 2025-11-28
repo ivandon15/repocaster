@@ -14,7 +14,7 @@ Repocaster employs a multi-stage agentic pipeline powered by **LangGraph**:
     *   **Workflow Analyst**: Identifies the correct execution order of scripts (e.g., pre-processing -> inference).
     *   **Schema Refiner**: Selects critical arguments and filters out noise.
     *   **Tool Critic & Reviser**: Iteratively improves tool coverage and argument completeness while avoiding redundancy.
-4.  **MCP Server Generation**: The agent generates a fully functional `server.py` using the `fastmcp` library, exposing the repository's capabilities as structured tools.
+4.  **MCP Server Generation**: The agent generates a fully functional `server.py` using the `fastmcp` library, exposing the repository's capabilities as structured tools. It also enriches the tools with **comprehensive docstrings**, ensuring that LLMs can accurately understand and utilize the tools.
 
 ### 📊 LangGraph Visualization
 
@@ -76,6 +76,16 @@ You can then run the generated server using the MCP inspector or configure it in
 ```bash
 mcp dev mcp_servers/ProteinMPNN/server.py
 ```
+
+## 🛠️ Recommended Workflow
+
+To ensure the generated MCP server works reliably in production:
+
+1.  **Generate**: Run Repocaster to generate the `server.py`.
+2.  **Verify**: Ask GitHub Copilot (or another coding assistant) to write a simple test script for the generated server code to catch any basic syntax or import errors.
+3.  **Test**: Connect the server to an LLM (e.g., via Claude Desktop or an MCP client) and run a test query.
+
+> **Note**: I found that the `qwen3-max` model with the LangGraph pipeline produces high-quality results that often require only minor adjustments.
 
 ## 🧪 Case Study: ProteinMPNN
 

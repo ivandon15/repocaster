@@ -22,12 +22,17 @@ def main():
     )  # deepseek-chat, qwen3-max
     parser.add_argument(
         "--model_url", default=None, help="URL for the model API (optional)."
-    )  # https://api.deepseek.com, https://dashscope.aliyuncs.com/compatible-mode/v1
+    )  # https://api.deepseek.com, https://dashscope.aliyuncs.com/compatible-mode/v1, https://generativelanguage.googleapis.com/v1beta/openai/
     parser.add_argument(
         "--api_key",
         default="OPENAI_API_KEY",
         help="API key for the model (default: OPENAI_API_KEY env var).",
     )  # DEEPSEEK_API_KEY, QWEN_API_KEY
+    parser.add_argument(
+        "--langgraph_style",
+        action="store_true",
+        help="Generate MCP server code with LangGraph-compatible return formats.",
+    )
 
     args = parser.parse_args()
 
@@ -35,6 +40,7 @@ def main():
     model_name = args.model_name
     model_url = args.model_url
     api_key = os.environ.get(args.api_key)
+    langgraph_style = args.langgraph_style
 
     if os.path.exists(repo_input) and os.path.isdir(repo_input):
         repo_name = os.path.basename(os.path.abspath(repo_input))
@@ -47,6 +53,7 @@ def main():
         model_name=model_name,
         model_url=model_url,
         model_api_key=api_key,
+        langgraph_style=langgraph_style,
     )
     caster.cast()
 

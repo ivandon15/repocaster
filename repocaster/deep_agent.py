@@ -9,6 +9,7 @@ from .prompts import (
     TOOL_REVISER_PROMPT,
     DOC_WRITER_PROMPT,
     CODE_GENERATOR_PROMPT,
+    CODE_GENERATOR_PROMPT_LANGGRAPH,
 )
 
 try:
@@ -53,6 +54,7 @@ class AgentState(TypedDict):
     critique_approved: bool
     missing_paths: List[str]
     user_guide: str
+    langgraph_style: bool
 
 
 # --- Nodes ---
@@ -110,6 +112,7 @@ class ContextGatherer:
             "critique_approved": False,
             "missing_paths": [],
             "user_guide": "",
+            "langgraph_style": state["langgraph_style"],
         }
 
 
@@ -445,8 +448,14 @@ class CodeGenerator:
     def __call__(self, state: AgentState) -> AgentState:
         logger.info("💻 [Generator] Writing MCP Server Code...")
 
+        print("State langgraph_style:", state.get("langgraph_style", False))
         # --- FIX: Code uses external USAGE.md instead of hardcoded string ---
-        prompt = ChatPromptTemplate.from_template(CODE_GENERATOR_PROMPT)
+        if state.get("langgraph_style", False):
+            prompt_template = CODE_GENERATOR_PROMPT_LANGGRAPH
+        else:
+            prompt_template = CODE_GENERATOR_PROMPT
+
+        prompt = ChatPromptTemplate.from_template(prompt_template)
 
         chain = prompt | self.llm | StrOutputParser()
         # We DO NOT pass user_guide content here to keep token count low
@@ -479,6 +488,7 @@ class DeepRepoAgent:
         model_url=None,
         model_name="gpt-5-nano",
         model_api_key=None,
+        langgraph_style=False,
     ):
         self.repo_path = repo_path
         self.repo_name = os.path.basename(repo_path)
@@ -486,6 +496,7 @@ class DeepRepoAgent:
         self.model_name = model_name
         self.model_url = model_url
         self.model_api_key = model_api_key
+        self.langgraph_style = langgraph_style
 
         # Build Graph
         builder = StateGraph(AgentState)
@@ -546,6 +557,7 @@ class DeepRepoAgent:
             "critique_approved": False,
             "missing_paths": [],
             "user_guide": "",
+            "langgraph_style": self.langgraph_style,
         }
 
         result = self.app.invoke(initial_state)

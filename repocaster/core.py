@@ -13,6 +13,7 @@ class RepoCaster:
         model_name=None,
         model_url=None,
         model_api_key=None,
+        langgraph_style=False,
     ):
         self.repo_url = repo_url
         self.output_dir = output_dir
@@ -20,6 +21,7 @@ class RepoCaster:
         self.model_name = model_name
         self.model_url = model_url
         self.model_api_key = model_api_key
+        self.langgraph_style = langgraph_style
 
     def _clone_repo(self, target_dir):
         if os.path.exists(self.repo_url) and os.path.isdir(self.repo_url):
@@ -61,6 +63,7 @@ class RepoCaster:
                 model_url=self.model_url,
                 model_name=self.model_name,
                 model_api_key=self.model_api_key,
+                langgraph_style=self.langgraph_style,
             )
             result = agent.run()
             server_code = result["server_code"]
