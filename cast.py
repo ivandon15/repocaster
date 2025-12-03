@@ -14,7 +14,7 @@ def main():
     )
     parser.add_argument(
         "repo_input", help="GitHub repository URL or local path to the repository."
-    )
+    )  # https://github.com/facebookresearch/esm
     parser.add_argument(
         "--model_name",
         default="gpt-4o",
@@ -59,4 +59,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # python cast.py \
+    # https://github.com/facebookresearch/esm \
+    # --model_name qwen3-max \
+    # --model_url https://dashscope.aliyuncs.com/compatible-mode/v1 \
+    # --api_key QWEN_API_KEY \
+    # --langgraph_style
     main()

@@ -117,22 +117,8 @@ class ContextGatherer:
 
 
 class WorkflowAnalyst:
-    def __init__(self, model_name, base_url=None, api_key=None):
-        if base_url:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                base_url=base_url,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
-        else:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
+    def __init__(self, llm):
+        self.llm = llm.bind(response_format={"type": "json_object"})
 
     def __call__(self, state: AgentState) -> AgentState:
         logger.info("🧠 [Analyst] Deducting workflows from examples & AST...")
@@ -195,22 +181,8 @@ class WorkflowAnalyst:
 
 
 class SchemaRefiner:
-    def __init__(self, model_name, base_url=None, api_key=None):
-        if base_url:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                base_url=base_url,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
-        else:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
+    def __init__(self, llm):
+        self.llm = llm.bind(response_format={"type": "json_object"})
 
     def __call__(self, state: AgentState) -> AgentState:
         logger.info("🔧 [Refiner] Finalizing tool definitions...")
@@ -285,22 +257,8 @@ class SchemaRefiner:
 
 
 class ToolCritic:
-    def __init__(self, model_name, base_url=None, api_key=None):
-        if base_url:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                base_url=base_url,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
-        else:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
+    def __init__(self, llm):
+        self.llm = llm.bind(response_format={"type": "json_object"})
 
     def __call__(self, state: AgentState) -> AgentState:
         logger.info(
@@ -349,22 +307,8 @@ class ToolCritic:
 
 
 class ToolReviser:
-    def __init__(self, model_name, base_url=None, api_key=None):
-        if base_url:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                base_url=base_url,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
-        else:
-            self.llm = ChatOpenAI(
-                model=model_name,
-                temperature=0,
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}},
-            )
+    def __init__(self, llm):
+        self.llm = llm.bind(response_format={"type": "json_object"})
 
     def __call__(self, state: AgentState) -> AgentState:
         logger.info(
@@ -412,13 +356,8 @@ class ToolReviser:
 
 
 class DocWriter:
-    def __init__(self, model_name, base_url=None, api_key=None):
-        if base_url:
-            self.llm = ChatOpenAI(
-                model=model_name, temperature=0, base_url=base_url, api_key=api_key
-            )
-        else:
-            self.llm = ChatOpenAI(model=model_name, temperature=0, api_key=api_key)
+    def __init__(self, llm):
+        self.llm = llm
 
     def __call__(self, state: AgentState) -> AgentState:
         logger.info("📖 [DocWriter] Generating User Manual...")
@@ -437,13 +376,8 @@ class DocWriter:
 
 
 class CodeGenerator:
-    def __init__(self, model_name, base_url=None, api_key=None):
-        if base_url:
-            self.llm = ChatOpenAI(
-                model=model_name, temperature=0, base_url=base_url, api_key=api_key
-            )
-        else:
-            self.llm = ChatOpenAI(model=model_name, temperature=0, api_key=api_key)
+    def __init__(self, llm):
+        self.llm = llm
 
     def __call__(self, state: AgentState) -> AgentState:
         logger.info("💻 [Generator] Writing MCP Server Code...")
@@ -498,27 +432,30 @@ class DeepRepoAgent:
         self.model_api_key = model_api_key
         self.langgraph_style = langgraph_style
 
+        # Initialize LLM once
+        if model_url:
+            self.llm = ChatOpenAI(
+                model=model_name,
+                temperature=0,
+                base_url=model_url,
+                api_key=model_api_key,
+            )
+        else:
+            self.llm = ChatOpenAI(
+                model=model_name,
+                temperature=0,
+                api_key=model_api_key,
+            )
+
         # Build Graph
         builder = StateGraph(AgentState)
         builder.add_node("gather", ContextGatherer())
-        builder.add_node(
-            "analyze", WorkflowAnalyst(model_name, self.model_url, self.model_api_key)
-        )
-        builder.add_node(
-            "refine", SchemaRefiner(model_name, self.model_url, self.model_api_key)
-        )
-        builder.add_node(
-            "critique", ToolCritic(model_name, self.model_url, self.model_api_key)
-        )
-        builder.add_node(
-            "reviser", ToolReviser(model_name, self.model_url, self.model_api_key)
-        )
-        builder.add_node(
-            "doc_writer", DocWriter(model_name, self.model_url, self.model_api_key)
-        )
-        builder.add_node(
-            "generate", CodeGenerator(model_name, self.model_url, self.model_api_key)
-        )
+        builder.add_node("analyze", WorkflowAnalyst(self.llm))
+        builder.add_node("refine", SchemaRefiner(self.llm))
+        builder.add_node("critique", ToolCritic(self.llm))
+        builder.add_node("reviser", ToolReviser(self.llm))
+        builder.add_node("doc_writer", DocWriter(self.llm))
+        builder.add_node("generate", CodeGenerator(self.llm))
 
         builder.set_entry_point("gather")
         builder.add_edge("gather", "analyze")
